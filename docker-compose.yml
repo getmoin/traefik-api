@@ -33,5 +33,5 @@ volumes:
   traefik-backups: 
 
 networks:
-  app-network:
+  unplugged_app-network:
     driver: bridge

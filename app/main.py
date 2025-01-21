@@ -5,7 +5,6 @@ import uvicorn
 
 app = FastAPI(title="Traefik Configuration Manager")
 
-# Include routers
 app.include_router(router_service.router)
 app.include_router(backup.router)
 

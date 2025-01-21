@@ -50,5 +50,3 @@ def create_backup(timestamp: str) -> ConfigBackup:
             status_code=500,
             detail=f"Backup failed: {str(e)}"
         )
-
-# ... rest of the backup service functions ... 
