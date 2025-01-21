@@ -5,6 +5,10 @@ from app.core.config import settings
 
 router = APIRouter(prefix="/api")
 
+@router.get("/")
+async def read_root():
+    return {"message": "Welcome to Traefik API"}
+
 @router.get("/router-service")
 async def list_routers_services():
     """List all router and service configurations"""
