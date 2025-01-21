@@ -8,7 +8,7 @@ class RouterConfig(BaseModel):
     domain: str = Field(..., example="api.example.com")
     service_name: str = Field(..., example="my-service")
     entry_points: List[str] = Field(default=["websecure"])
-    enable_tls: bool = Field(default=True)
+    enable_tls: bool = Field(default=False)
     middlewares: List[str] = Field(default_factory=list)
 
 class RouterServiceConfig(BaseModel):

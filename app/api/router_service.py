@@ -27,7 +27,8 @@ async def add_router_and_service(config: RouterServiceConfig):
                     "main": config.config.domain,
                     "sans": [f"*.{config.config.domain}"]
                 }]
-            } if config.config.enable_tls else {}
+            } if config.config.enable_tls else {},
+            "middlewares": config.config.middlewares if config.config.middlewares else []
         }
 
         # Add service configuration
