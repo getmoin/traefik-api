@@ -1,7 +1,7 @@
 FROM alpine:latest
 
 # Install required packages
-RUN apk add --no-cache python3 py3-pip python3-venv
+RUN apk add --no-cache python3 py3-pip py3-virtualenv
 
 # Create necessary directories and files
 RUN mkdir -p /etc/traefik/dynamic /etc/traefik/acme /etc/traefik/backups && \
