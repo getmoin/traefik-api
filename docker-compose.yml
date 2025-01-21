@@ -3,14 +3,19 @@ version: '3.7'
 services:
   traefik:
     image: traefik:v2.5
+    container_name: traefik
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.file.directory=/etc/traefik/dynamic"
+      - "--providers.file.watch=true"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.acmeresolver.acme.dnschallenge=true"
       - "--certificatesresolvers.acmeresolver.acme.dnschallenge.provider=route53"
       - "--certificatesresolvers.acmeresolver.acme.email=${AWS_CERT_EMAIL}"
-      - "--certificatesresolvers.acmeresolver.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.acmeresolver.acme.storage=/etc/traefik/acme/acme.json"
     ports:
       - "80:80"
       - "443:443"
@@ -21,12 +26,15 @@ services:
     environment:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
     networks:
       - docker_orbitNetwork
+    labels:
+      - "traefik.enable=true"
 
-  traefik-config-manager:
+  traefik-manager:
     build: .
-    container_name: traefik-traefik-config-manager-1
+    container_name: traefik-manager
     env_file:
       - .env
     ports:

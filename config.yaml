@@ -8,19 +8,20 @@ http:
       tls:
         certResolver: "acmeresolver"
       middlewares:
-        - cors-allow-all
+        - "cors-allow-all@file"
 
   services:
     traefikapi:
       loadBalancer:
         servers:
-          - url: http://traefik-traefik-config-manager-1:8000
+          - url: "http://traefik-traefik-manager-1:8000"
 
   middlewares:
     cors-allow-all:
       headers:
         accessControlAllowCredentials: true
-        accessControlAllowHeaders: "*"
+        accessControlAllowHeaders:
+          - "*"
         accessControlAllowMethods:
           - "GET"
           - "OPTIONS"
@@ -29,5 +30,6 @@ http:
           - "DELETE"
         accessControlAllowOriginList:
           - "*"
-        accessControlExposeHeaders: "*"
+        accessControlExposeHeaders:
+          - "*"
         accessControlMaxAge: 100
