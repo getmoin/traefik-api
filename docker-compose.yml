@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   traefik:
-    image: traefik:v2.5
+    image: traefik:v2.10
     container_name: traefik
     command:
       - "--api.insecure=true"
@@ -20,13 +20,14 @@ services:
       - "80:80"
       - "443:443"
       - "8080:8080"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "./letsencrypt:/letsencrypt"
     environment:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=${AWS_REGION}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config.yaml:/etc/traefik/dynamic/config.yaml:ro
+      - ./acme:/etc/traefik/acme
     networks:
       - docker_orbitNetwork
     labels:
@@ -56,10 +57,12 @@ services:
     networks:
       - docker_orbitNetwork
 
-networks:
-  docker_orbitNetwork:
-    driver: bridge
-
 volumes:
   traefik-config:
     name: traefik-config
+  acme:
+    name: traefik-acme
+
+networks:
+  docker_orbitNetwork:
+    external: true

@@ -1,3 +1,4 @@
+# Dynamic Configuration
 http:
   routers:
     random-router:
@@ -33,3 +34,8 @@ http:
         accessControlExposeHeaders:
           - "*"
         accessControlMaxAge: 100
+
+tls:
+  options:
+    default:
+      minVersion: "VersionTLS12"
