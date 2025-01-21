@@ -1,22 +1,35 @@
-version: '3.8'
+version: '3.7'
 
 services:
-  traefik-config-manager:
-    build: .
+  traefik:
+    image: traefik:v2.5
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.acmeresolver.acme.dnschallenge.provider=route53"
+      - "--certificatesresolvers.acmeresolver.acme.email=${AWS_CERT_EMAIL}"
+      - "--certificatesresolvers.acmeresolver.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"
       - "443:443"
-      - "8000:8000"
       - "8080:8080"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - traefik-dynamic-config:/etc/traefik/dynamic
-      - traefik-acme:/etc/traefik/acme
-      - traefik-backups:/etc/traefik/backups
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./letsencrypt:/letsencrypt"
     environment:
-      - HOST=0.0.0.0
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    networks:
+      - docker_orbitNetwork
+
+  traefik-config-manager:
+    image: your-service-image
+    container_name: traefik-traefik-config-manager-1
+    ports:
+      - "8000:8000"
+    environment:
       - PORT=8000
       - AWS_REGION=${AWS_REGION}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
@@ -28,13 +41,9 @@ services:
       - CERT_RESOLVER=route53
       - AWS_HOSTED_ZONE_ID=${AWS_HOSTED_ZONE_ID}
       - AWS_CERT_EMAIL=${AWS_CERT_EMAIL}
-
-volumes:
-  traefik-dynamic-config:
-  traefik-acme:
-  traefik-backups:
+    networks:
+      - docker_orbitNetwork
 
 networks:
-  default:
-    external:
-      name: docker_orbitNetwork
+  docker_orbitNetwork:
+    driver: bridge

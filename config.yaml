@@ -14,8 +14,7 @@ http:
     traefikapi:
       loadBalancer:
         servers:
-          - url: http://traefik-traefik-config-manager-1:8000  
-
+          - url: http://traefik-traefik-config-manager-1:8000
 
   middlewares:
     cors-allow-all:
