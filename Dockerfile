@@ -13,13 +13,16 @@ WORKDIR /app
 COPY requirements.txt ./
 RUN pip3 install --no-cache-dir -r requirements.txt
 
-COPY app/ ./app/
 COPY .env ./.env
+COPY start.sh /usr/local/bin/
+COPY . .
 
+# Create directories and set permissions
 RUN mkdir -p /etc/traefik/acme /etc/traefik/backups && \
     chmod +x /usr/local/bin/start.sh && \
     sed -i 's/\r$//' /usr/local/bin/start.sh
 
 EXPOSE 8000
 
-ENTRYPOINT ["sh", "/usr/local/bin/start.sh"]
+# Set the start script as the entrypoint
+ENTRYPOINT ["/usr/local/bin/start.sh"]

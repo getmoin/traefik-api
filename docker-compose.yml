@@ -25,7 +25,7 @@ services:
       - docker_orbitNetwork
 
   traefik-config-manager:
-    image: your-service-image
+    build: .
     container_name: traefik-traefik-config-manager-1
     ports:
       - "8000:8000"
