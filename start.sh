@@ -7,6 +7,7 @@ if [ ! -f /etc/traefik/dynamic/config.yaml ]; then
   services: {}" > /etc/traefik/dynamic/config.yaml
 fi
 
+export $(grep -v '^#' .env | xargs)
 traefik --configfile=/etc/traefik/traefik.yaml &
 
 sleep 3

@@ -1,6 +1,5 @@
-FROM traefik:v2.10
+FROM python:3.9-alpine
 
-USER root
 RUN apk update && apk add \
     python3 \
     py3-pip \
@@ -11,13 +10,14 @@ RUN apk update && apk add \
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY requirements.txt ./
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY app/ ./app/
 COPY traefik.yaml /etc/traefik/traefik.yaml
 COPY config.yaml /etc/traefik/dynamic/config.yaml
 COPY start.sh /usr/local/bin/start.sh
+COPY .env ./.env
 
 RUN mkdir -p /etc/traefik/acme /etc/traefik/backups && \
     chmod +x /usr/local/bin/start.sh && \

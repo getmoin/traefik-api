@@ -1,20 +1,28 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, Header
 from app.core.models import RouterServiceConfig
 from app.services.config_service import load_config, save_config
 from app.core.config import settings
+import os
 
 router = APIRouter(prefix="/api")
 
-@router.get("/")
+# Load the API key from the environment
+API_KEY = os.getenv("API_KEY")
+
+def api_key_auth(api_key: str = Header(...)):
+    if api_key != API_KEY:
+        raise HTTPException(status_code=403, detail="Invalid API Key")
+
+@router.get("/", dependencies=[Depends(api_key_auth)])
 async def read_root():
     return {"message": "Welcome to Traefik API"}
 
-@router.get("/router-service")
+@router.get("/router-service", dependencies=[Depends(api_key_auth)])
 async def list_routers_services():
     """List all router and service configurations"""
     return load_config()
 
-@router.post("/router-service")
+@router.post("/router-service", dependencies=[Depends(api_key_auth)])
 async def add_router_and_service(config: RouterServiceConfig):
     """Add a new router and service configuration"""
     try:
@@ -50,7 +58,7 @@ async def add_router_and_service(config: RouterServiceConfig):
             detail=f"Failed to add router and service: {str(e)}"
         )
 
-@router.delete("/router-service/{router_name}/{service_name}")
+@router.delete("/router-service/{router_name}/{service_name}", dependencies=[Depends(api_key_auth)])
 async def remove_router_and_service(router_name: str, service_name: str):
     """Remove a router and service configuration"""
     try:
