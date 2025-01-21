@@ -18,27 +18,27 @@ providers:
 entryPoints:
   web:
     address: ":80"
-    # http:
-    #   redirections:
-    #     entryPoint:
-    #       to: "websecure"
-    #       scheme: "https"
-    #       permanent: true
+    http:
+      redirections:
+        entryPoint:
+          to: "websecure"
+          scheme: "https"
+          permanent: true
   websecure:
     address: ":443"
 
-# certificatesResolvers:
-#   route53:
-#     acme:
-#       email: ${AWS_CERT_EMAIL}
-#       storage: /etc/traefik/acme/acme.json
-#       dnsChallenge:
-#         provider: route53
-#         resolvers:
-#           - "1.1.1.1:53"
-#           - "8.8.8.8:53"
+certificatesResolvers:
+  route53:
+    acme:
+      email: moin@northernblock.io
+      storage: /etc/traefik/acme/acme.json
+      dnsChallenge:
+        provider: route53
+        resolvers:
+          - "1.1.1.1:53"
+          - "8.8.8.8:53"
 
 log:
-  level: INFO
+  level: DEBUG
 
 accessLog: {}

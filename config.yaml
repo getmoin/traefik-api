@@ -1,18 +1,20 @@
 http:
   routers:
     random-router:
-      rule: "Host(`some.random.domain`)"
-      service: "random-service"
+      rule: "Host(`traefikapi.iata-poc.nborbit.ca`)"
+      service: "traefikapi"
       entryPoints:
         - "websecure"
       tls:
         certResolver: "acmeresolver"
+      middlewares:
+        - cors-allow-all
 
   services:
-    random-service:
+    traefikapi:
       loadBalancer:
         servers:
-          - url: http://localhost:9540 
+          - url: http://traefik-traefik-config-manager-1:8000  
 
 
   middlewares:

@@ -32,4 +32,9 @@ services:
 volumes:
   traefik-dynamic-config:
   traefik-acme:
-  traefik-backups: 
+  traefik-backups:
+
+networks:
+  default:
+    external:
+      name: docker_orbitNetwork
