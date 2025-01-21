@@ -1,5 +1,6 @@
-FROM python:3.9-alpine
+FROM traefik:v2.10
 
+USER root
 RUN apk update && apk add \
     python3 \
     py3-pip \
@@ -10,7 +11,7 @@ RUN apk update && apk add \
 
 WORKDIR /app
 
-COPY requirements.txt ./
+COPY requirements.txt .
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY app/ ./app/
