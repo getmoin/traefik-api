@@ -17,10 +17,15 @@ COPY .env ./.env
 COPY start.sh /usr/local/bin/
 COPY . .
 
-# Create directories and set permissions
-RUN mkdir -p /etc/traefik/acme /etc/traefik/backups && \
-    chmod +x /usr/local/bin/start.sh && \
-    sed -i 's/\r$//' /usr/local/bin/start.sh
+# # Create directories and set permissions
+# RUN mkdir -p /etc/traefik/acme /etc/traefik/backups && \
+#     chmod +x /usr/local/bin/start.sh && \
+#     sed -i 's/\r$//' /usr/local/bin/start.sh
+
+# Create necessary directories and files
+RUN mkdir -p /etc/traefik/dynamic && \
+    touch /etc/traefik/dynamic/config.yaml && \
+    chmod 644 /etc/traefik/dynamic/config.yaml
 
 EXPOSE 8000
 
