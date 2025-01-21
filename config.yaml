@@ -1,0 +1,32 @@
+http:
+  routers:
+    random-router:
+      rule: "Host(`some.random.domain`)"
+      service: "random-service"
+      entryPoints:
+        - "websecure"
+      tls:
+        certResolver: "acmeresolver"
+
+  services:
+    random-service:
+      loadBalancer:
+        servers:
+          - url: http://localhost:9540 
+
+
+  middlewares:
+    cors-allow-all:
+      headers:
+        accessControlAllowCredentials: true
+        accessControlAllowHeaders: "*"
+        accessControlAllowMethods:
+          - "GET"
+          - "OPTIONS"
+          - "PUT"
+          - "POST"
+          - "DELETE"
+        accessControlAllowOriginList:
+          - "*"
+        accessControlExposeHeaders: "*"
+        accessControlMaxAge: 100

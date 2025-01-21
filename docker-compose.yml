@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  traefik-config-manager:
+    build: .
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8000:8000"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-dynamic-config:/etc/traefik/dynamic
+      - traefik-acme:/etc/traefik/acme
+      - traefik-backups:/etc/traefik/backups
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - AWS_REGION=${AWS_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - ENABLE_S3_BACKUP=${ENABLE_S3_BACKUP}
+      - CONFIG_FILE=/etc/traefik/dynamic/config.yaml
+      - LOCAL_BACKUP_DIR=/etc/traefik/backups
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - CERT_RESOLVER=route53
+      - AWS_HOSTED_ZONE_ID=${AWS_HOSTED_ZONE_ID}
+      - AWS_CERT_EMAIL=${AWS_CERT_EMAIL}
+
+volumes:
+  traefik-dynamic-config:
+  traefik-acme:
+  traefik-backups: 
+
+networks:
+  app-network:
+    driver: bridge
