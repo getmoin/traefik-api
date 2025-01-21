@@ -8,6 +8,8 @@ services:
       - "443:443"
       - "8000:8000"
       - "8080:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik-dynamic-config:/etc/traefik/dynamic
@@ -31,7 +33,3 @@ volumes:
   traefik-dynamic-config:
   traefik-acme:
   traefik-backups: 
-
-networks:
-  unplugged_app-network:
-    driver: bridge
