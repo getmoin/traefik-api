@@ -2,16 +2,35 @@ import yaml
 from fastapi import HTTPException
 from app.core.config import settings
 
-def load_config() -> dict:
-    """Load the current Traefik configuration"""
+def load_config():
+    """Load configuration from file"""
     try:
         with open(settings.CONFIG_FILE, 'r') as f:
-            return yaml.safe_load(f)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to load configuration: {str(e)}"
-        )
+            config = yaml.safe_load(f)
+            
+        # Initialize empty structure if config is None
+        if config is None:
+            config = {
+                'http': {
+                    'routers': {},
+                    'services': {}
+                }
+            }
+            # Save the initial structure
+            save_config(config)
+            
+        return config
+    except FileNotFoundError:
+        # Create initial configuration structure
+        config = {
+            'http': {
+                'routers': {},
+                'services': {}
+            }
+        }
+        # Save the initial structure
+        save_config(config)
+        return config
 
 def save_config(config: dict):
     """Save the Traefik configuration"""
