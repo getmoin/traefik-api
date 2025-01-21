@@ -4,9 +4,7 @@ FROM alpine:latest
 RUN apk add --no-cache python3 py3-pip py3-virtualenv
 
 # Create necessary directories and files
-RUN mkdir -p /etc/traefik/dynamic /etc/traefik/acme /etc/traefik/backups && \
-    touch /etc/traefik/dynamic/config.yaml && \
-    chmod 644 /etc/traefik/dynamic/config.yaml
+RUN mkdir -p /etc/traefik/dynamic /etc/traefik/acme /etc/traefik/backups
 
 # Create app directory
 WORKDIR /app
@@ -15,6 +13,10 @@ WORKDIR /app
 ENV VIRTUAL_ENV=/app/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Copy initial config file
+COPY config.yaml /etc/traefik/dynamic/config.yaml
+RUN chmod 644 /etc/traefik/dynamic/config.yaml
 
 # Copy requirements first to leverage Docker cache
 COPY requirements.txt .
