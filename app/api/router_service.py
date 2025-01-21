@@ -44,3 +44,35 @@ async def add_router_and_service(config: RouterServiceConfig):
             status_code=500,
             detail=f"Failed to add router and service: {str(e)}"
         )
+
+@router.delete("/router-service/{router_name}/{service_name}")
+async def remove_router_and_service(router_name: str, service_name: str):
+    """Remove a router and service configuration"""
+    try:
+        current_config = load_config()
+        
+        # Remove router configuration
+        if router_name in current_config['http']['routers']:
+            del current_config['http']['routers'][router_name]
+        else:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Router {router_name} not found"
+            )
+        
+        # Remove service configuration
+        if service_name in current_config['http']['services']:
+            del current_config['http']['services'][service_name]
+        else:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Service {service_name} not found"
+            )
+        
+        save_config(current_config)
+        return {"status": "success", "message": "Router and service removed successfully"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to remove router and service: {str(e)}"
+        )
