@@ -1,6 +1,10 @@
 #!/bin/sh
 
 # Load environment variables from .env file
-export $(grep -v '^#' .env | xargs)
+if [ -f "/.env" ]; then
+    set -a
+    . /.env
+    set +a
+fi
 
 python3 -m app.main

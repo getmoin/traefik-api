@@ -27,6 +27,8 @@ services:
   traefik-config-manager:
     build: .
     container_name: traefik-traefik-config-manager-1
+    env_file:
+      - .env
     ports:
       - "8000:8000"
     environment:
