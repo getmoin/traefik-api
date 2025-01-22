@@ -27,7 +27,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - config-volume:/etc/traefik/dynamic:rw
-      - ./acme:/etc/traefik/acme
+      - acme-volume:/etc/traefik/acme:rw
     networks:
       - docker_orbitNetwork
     labels:
@@ -35,6 +35,16 @@ services:
     depends_on:
       init-config:
         condition: service_completed_successfully
+
+  # Add init service to set up ACME permissions
+  init-acme:
+    image: alpine
+    command: >
+      sh -c "mkdir -p /etc/traefik/acme && 
+             touch /etc/traefik/acme/acme.json && 
+             chmod 600 /etc/traefik/acme/acme.json"
+    volumes:
+      - acme-volume:/etc/traefik/acme:rw
 
   traefik-manager:
     build: .
@@ -60,8 +70,7 @@ services:
     networks:
       - docker_orbitNetwork
     depends_on:
-      init-config:
-        condition: service_completed_successfully
+      - init-acme
 
   # Add initialization service
   init-config:
@@ -77,6 +86,8 @@ services:
 volumes:
   config-volume:
     name: traefik-config-volume
+  acme-volume:
+    name: traefik-acme-volume
 
 networks:
   docker_orbitNetwork:
