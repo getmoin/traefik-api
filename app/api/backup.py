@@ -27,20 +27,11 @@ async def create_config_backup():
         print(f"Created timestamp: {timestamp}")
         
         # Create backup using backup service
-        print("Calling backup service...")
         backup_result = create_backup(timestamp)
-        print(f"Backup service result: {backup_result}")
         
         # Ensure local backup exists regardless of S3 status
         backup_filename = f"traefik_config_{timestamp}.yaml"
         local_backup_path = os.path.join(settings.LOCAL_BACKUP_DIR, backup_filename)
-        print(f"Local backup path: {local_backup_path}")
-        
-        # Debug settings
-        print(f"Settings:")
-        print(f"LOCAL_BACKUP_DIR: {settings.LOCAL_BACKUP_DIR}")
-        print(f"CONFIG_FILE: {settings.CONFIG_FILE}")
-        print(f"ENABLE_S3_BACKUP: {settings.ENABLE_S3_BACKUP}")
         
         # Ensure backup directory exists
         os.makedirs(settings.LOCAL_BACKUP_DIR, exist_ok=True)
