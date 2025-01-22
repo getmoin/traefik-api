@@ -5,6 +5,7 @@ import yaml
 from app.core.config import settings
 from app.services.config_service import load_config
 from app.services.backup_service import create_backup
+import traceback
 
 router = APIRouter(prefix="/api")
 
@@ -19,23 +20,38 @@ def api_key_auth(api_key: str = Header(...)):
 async def create_config_backup():
     """Create a backup of the current configuration"""
     try:
+        print("Starting backup process...")
+        
         # Create timestamp for backup
         timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        print(f"Created timestamp: {timestamp}")
         
         # Create backup using backup service
+        print("Calling backup service...")
         backup_result = create_backup(timestamp)
+        print(f"Backup service result: {backup_result}")
         
         # Ensure local backup exists regardless of S3 status
         backup_filename = f"traefik_config_{timestamp}.yaml"
         local_backup_path = os.path.join(settings.LOCAL_BACKUP_DIR, backup_filename)
+        print(f"Local backup path: {local_backup_path}")
+        
+        # Debug settings
+        print(f"Settings:")
+        print(f"LOCAL_BACKUP_DIR: {settings.LOCAL_BACKUP_DIR}")
+        print(f"CONFIG_FILE: {settings.CONFIG_FILE}")
+        print(f"ENABLE_S3_BACKUP: {settings.ENABLE_S3_BACKUP}")
         
         # Ensure backup directory exists
         os.makedirs(settings.LOCAL_BACKUP_DIR, exist_ok=True)
         
         # Create local backup
         current_config = load_config()
+        print(f"Loaded current config, size: {len(str(current_config))} bytes")
+        
         with open(local_backup_path, 'w') as f:
             yaml.dump(current_config, f, default_flow_style=False)
+        print(f"Local backup created at: {local_backup_path}")
         
         response = {
             "status": "success",
@@ -47,7 +63,7 @@ async def create_config_backup():
         }
         
         # Add S3 information if backup was created in S3
-        if backup_result.location == 's3':
+        if backup_result and backup_result.location == 's3':
             response["backup"]["s3_key"] = backup_result.backup_key
             print(f"Backup successfully created in S3: {backup_result.backup_key}")
         else:
@@ -59,7 +75,9 @@ async def create_config_backup():
         
     except Exception as e:
         error_msg = f"Failed to create backup: {str(e)}"
-        print(error_msg)  # Log the error
+        print(error_msg)
+        print("Full traceback:")
+        traceback.print_exc()
         raise HTTPException(
             status_code=500,
             detail=error_msg
