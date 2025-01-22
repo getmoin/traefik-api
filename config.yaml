@@ -10,13 +10,11 @@ http:
         certResolver: "acmeresolver"
       middlewares:
         - "cors-headers@file"
-
   services:
     traefikapi:
       loadBalancer:
         servers:
           - url: "http://traefik-manager:8000"
-
   middlewares:
     cors-headers:
       headers:
@@ -39,7 +37,6 @@ http:
           X-Content-Type-Options: "nosniff"
           X-Frame-Options: "DENY"
           Strict-Transport-Security: "max-age=31536000; includeSubDomains"
-
 tls:
   options:
     default:

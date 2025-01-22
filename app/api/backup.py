@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, Header
 from datetime import datetime
 import os
 import yaml
@@ -7,7 +7,14 @@ from app.services.config_service import load_config
 
 router = APIRouter(prefix="/api")
 
-@router.post("/backup")
+# Load the API key from the environment
+API_KEY = os.getenv("API_KEY")
+
+def api_key_auth(api_key: str = Header(...)):
+    if api_key != API_KEY:
+        raise HTTPException(status_code=403, detail="Invalid API Key")
+
+@router.post("/backup", dependencies=[Depends(api_key_auth)])
 async def create_config_backup():
     """Create a backup of the current configuration"""
     try:
@@ -38,7 +45,7 @@ async def create_config_backup():
             detail=f"Failed to create backup: {str(e)}"
         )
 
-@router.get("/backup")
+@router.get("/backup", dependencies=[Depends(api_key_auth)])
 async def list_backups():
     """List all available backups"""
     try:
@@ -64,7 +71,7 @@ async def list_backups():
             detail=f"Failed to list backups: {str(e)}"
         )
 
-@router.get("/backup/{backup_key}")
+@router.get("/backup/{backup_key}", dependencies=[Depends(api_key_auth)])
 async def get_backup(backup_key: str):
     """Retrieve a specific backup"""
     try:
