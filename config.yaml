@@ -1,7 +1,7 @@
 # Dynamic Configuration
 http:
   routers:
-    random-router:
+    traefikapi-router:
       rule: "Host(`traefikapi.iata-poc.nborbit.ca`)"
       service: "traefikapi"
       entryPoints:
