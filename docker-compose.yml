@@ -26,7 +26,7 @@ services:
       - AWS_REGION=${AWS_REGION}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - traefik-dynamic:/etc/traefik/dynamic
+      - config-volume:/etc/traefik/dynamic:rw
       - ./acme:/etc/traefik/acme
     networks:
       - docker_orbitNetwork
@@ -56,7 +56,7 @@ services:
       - AWS_HOSTED_ZONE_ID=${AWS_HOSTED_ZONE_ID}
       - AWS_CERT_EMAIL=${AWS_CERT_EMAIL}
     volumes:
-      - traefik-dynamic:/etc/traefik/dynamic
+      - config-volume:/etc/traefik/dynamic:rw
     networks:
       - docker_orbitNetwork
     depends_on:
@@ -67,7 +67,7 @@ services:
   init-config:
     image: alpine
     volumes:
-      - traefik-dynamic:/etc/traefik/dynamic
+      - config-volume:/etc/traefik/dynamic
       - ./config.yaml:/tmp/config.yaml:ro
     command: >
       sh -c "mkdir -p /etc/traefik/dynamic && 
@@ -75,10 +75,8 @@ services:
              chmod 644 /etc/traefik/dynamic/config.yaml"
 
 volumes:
-  traefik-dynamic:
-    name: traefik-dynamic
-  acme:
-    name: traefik-acme
+  config-volume:
+    name: traefik-config-volume
 
 networks:
   docker_orbitNetwork:
