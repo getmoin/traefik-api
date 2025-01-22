@@ -62,7 +62,7 @@ services:
       - CONFIG_FILE=/etc/traefik/dynamic/config.yaml
       - LOCAL_BACKUP_DIR=/etc/traefik/backups
       - S3_BUCKET_NAME=${S3_BUCKET_NAME}
-      - CERT_RESOLVER=route53
+      - CERT_RESOLVER=acmeresolver
       - AWS_HOSTED_ZONE_ID=${AWS_HOSTED_ZONE_ID}
       - AWS_CERT_EMAIL=${AWS_CERT_EMAIL}
     volumes:
