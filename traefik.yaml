@@ -30,15 +30,23 @@ entryPoints:
 certificatesResolvers:
   route53:
     acme:
-      email: moin@northernblock.io
+      email: someemail@email.com
       storage: /etc/traefik/acme/acme.json
       dnsChallenge:
         provider: route53
         resolvers:
           - "1.1.1.1:53"
           - "8.8.8.8:53"
+        delayBeforeCheck: 30
+      # Enable staging mode for testing
+      # caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
 
 log:
   level: DEBUG
 
 accessLog: {}
+
+environment:
+  - AWS_ACCESS_KEY_ID=your_access_key
+  - AWS_SECRET_ACCESS_KEY=your_secret_key
+  - AWS_REGION=your_region

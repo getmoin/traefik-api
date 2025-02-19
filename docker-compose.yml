@@ -1,22 +1,59 @@
-version: '3.8'
+version: '3.7'
 
 services:
-  traefik-config-manager:
-    build: .
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.file.directory=/etc/traefik/dynamic"
+      - "--providers.file.watch=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.acmeresolver.acme.dnschallenge=true"
+      - "--certificatesresolvers.acmeresolver.acme.dnschallenge.provider=route53"
+      - "--certificatesresolvers.acmeresolver.acme.email=${AWS_CERT_EMAIL}"
+      - "--certificatesresolvers.acmeresolver.acme.storage=/etc/traefik/acme/acme.json"
     ports:
       - "80:80"
       - "443:443"
-      - "8000:8000"
       - "8080:8080"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - traefik-dynamic-config:/etc/traefik/dynamic
-      - traefik-acme:/etc/traefik/acme
-      - traefik-backups:/etc/traefik/backups
+      - config-volume:/etc/traefik/dynamic:rw
+      - acme-volume:/etc/traefik/acme:rw
+    networks:
+      - docker_orbitNetwork
+    labels:
+      - "traefik.enable=true"
+    depends_on:
+      init-config:
+        condition: service_completed_successfully
+
+  # Add init service to set up ACME permissions
+  init-acme:
+    image: alpine
+    command: >
+      sh -c "mkdir -p /etc/traefik/acme && 
+             touch /etc/traefik/acme/acme.json && 
+             chmod 600 /etc/traefik/acme/acme.json"
+    volumes:
+      - acme-volume:/etc/traefik/acme:rw
+
+  traefik-manager:
+    build: .
+    container_name: traefik-manager
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
     environment:
-      - HOST=0.0.0.0
       - PORT=8000
       - AWS_REGION=${AWS_REGION}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
@@ -25,16 +62,33 @@ services:
       - CONFIG_FILE=/etc/traefik/dynamic/config.yaml
       - LOCAL_BACKUP_DIR=/etc/traefik/backups
       - S3_BUCKET_NAME=${S3_BUCKET_NAME}
-      - CERT_RESOLVER=route53
+      - CERT_RESOLVER=acmeresolver
       - AWS_HOSTED_ZONE_ID=${AWS_HOSTED_ZONE_ID}
       - AWS_CERT_EMAIL=${AWS_CERT_EMAIL}
+    volumes:
+      - config-volume:/etc/traefik/dynamic:rw
+    networks:
+      - docker_orbitNetwork
+    depends_on:
+      - init-acme
+
+  # Add initialization service
+  init-config:
+    image: alpine
+    volumes:
+      - config-volume:/etc/traefik/dynamic
+      - ./config.yaml:/tmp/config.yaml:ro
+    command: >
+      sh -c "mkdir -p /etc/traefik/dynamic && 
+             cp /tmp/config.yaml /etc/traefik/dynamic/config.yaml && 
+             chmod 644 /etc/traefik/dynamic/config.yaml"
 
 volumes:
-  traefik-dynamic-config:
-  traefik-acme:
-  traefik-backups:
+  config-volume:
+    name: traefik-config-volume
+  acme-volume:
+    name: traefik-acme-volume
 
 networks:
-  default:
-    external:
-      name: docker_orbitNetwork
+  docker_orbitNetwork:
+    external: true

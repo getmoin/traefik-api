@@ -34,11 +34,7 @@ async def add_router_and_service(config: RouterServiceConfig):
             "service": config.config.service_name,
             "entryPoints": config.config.entry_points,
             "tls": {
-                "certResolver": settings.CERT_RESOLVER,
-                "domains": [{
-                    "main": config.config.domain,
-                    "sans": [f"*.{config.config.domain}"]
-                }]
+                "certResolver": settings.CERT_RESOLVER
             } if config.config.enable_tls else {},
             "middlewares": config.config.middlewares if config.config.middlewares else []
         }

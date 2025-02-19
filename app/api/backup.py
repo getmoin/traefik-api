@@ -1,44 +1,80 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, Header
 from datetime import datetime
 import os
 import yaml
 from app.core.config import settings
 from app.services.config_service import load_config
+from app.services.backup_service import create_backup
+import traceback
 
 router = APIRouter(prefix="/api")
 
-@router.post("/backup")
+# Load the API key from the environment
+API_KEY = os.getenv("API_KEY")
+
+def api_key_auth(api_key: str = Header(...)):
+    if api_key != API_KEY:
+        raise HTTPException(status_code=403, detail="Invalid API Key")
+
+@router.post("/backup", dependencies=[Depends(api_key_auth)])
 async def create_config_backup():
     """Create a backup of the current configuration"""
     try:
-        # Create backup filename with timestamp
+        print("Starting backup process...")
+        
+        # Create timestamp for backup
         timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        print(f"Created timestamp: {timestamp}")
+        
+        # Create backup using backup service
+        backup_result = create_backup(timestamp)
+        
+        # Ensure local backup exists regardless of S3 status
         backup_filename = f"traefik_config_{timestamp}.yaml"
-        backup_path = os.path.join(settings.LOCAL_BACKUP_DIR, backup_filename)
-
+        local_backup_path = os.path.join(settings.LOCAL_BACKUP_DIR, backup_filename)
+        
         # Ensure backup directory exists
         os.makedirs(settings.LOCAL_BACKUP_DIR, exist_ok=True)
-
-        # Copy current config to backup
+        
+        # Create local backup
         current_config = load_config()
-        with open(backup_path, 'w') as f:
+        print(f"Loaded current config, size: {len(str(current_config))} bytes")
+        
+        with open(local_backup_path, 'w') as f:
             yaml.dump(current_config, f, default_flow_style=False)
-
-        return {
+        print(f"Local backup created at: {local_backup_path}")
+        
+        response = {
             "status": "success",
             "backup": {
                 "filename": backup_filename,
-                "path": backup_path,
-                "timestamp": timestamp
+                "local_path": local_backup_path,
+                "timestamp": timestamp,
             }
         }
+        
+        # Add S3 information if backup was created in S3
+        if backup_result and backup_result.location == 's3':
+            response["backup"]["s3_key"] = backup_result.backup_key
+            print(f"Backup successfully created in S3: {backup_result.backup_key}")
+        else:
+            print("Backup created locally only. S3 backup was not created.")
+            if settings.ENABLE_S3_BACKUP:
+                print("S3 backup was enabled but failed. Check S3 configuration and permissions.")
+        
+        return response
+        
     except Exception as e:
+        error_msg = f"Failed to create backup: {str(e)}"
+        print(error_msg)
+        print("Full traceback:")
+        traceback.print_exc()
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to create backup: {str(e)}"
+            detail=error_msg
         )
 
-@router.get("/backup")
+@router.get("/backup", dependencies=[Depends(api_key_auth)])
 async def list_backups():
     """List all available backups"""
     try:
@@ -64,7 +100,7 @@ async def list_backups():
             detail=f"Failed to list backups: {str(e)}"
         )
 
-@router.get("/backup/{backup_key}")
+@router.get("/backup/{backup_key}", dependencies=[Depends(api_key_auth)])
 async def get_backup(backup_key: str):
     """Retrieve a specific backup"""
     try:

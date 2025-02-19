@@ -20,7 +20,7 @@ class Settings:
     S3_BUCKET_NAME: str = os.getenv("S3_BUCKET_NAME")
     
     # Certificate Settings
-    CERT_RESOLVER: str = os.getenv("CERT_RESOLVER", "route53")
+    CERT_RESOLVER: str = os.getenv("CERT_RESOLVER", "acmeresolver")
     AWS_HOSTED_ZONE_ID: str = os.getenv("AWS_HOSTED_ZONE_ID")
     AWS_CERT_EMAIL: str = os.getenv("AWS_CERT_EMAIL")
 

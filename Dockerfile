@@ -1,29 +1,36 @@
-FROM traefik:v2.10
+FROM alpine:latest
 
-USER root
-RUN apk update && apk add \
-    python3 \
-    py3-pip \
-    gcc \
-    python3-dev \
-    musl-dev \
-    && rm -rf /var/cache/apk/*
+# Install required packages
+RUN apk add --no-cache python3 py3-pip py3-virtualenv
 
+# Create necessary directories and files
+RUN mkdir -p /etc/traefik/dynamic /etc/traefik/acme /etc/traefik/backups
+
+# Create app directory
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt
+# Create and activate virtual environment
+ENV VIRTUAL_ENV=/app/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-COPY app/ ./app/
-COPY traefik.yaml /etc/traefik/traefik.yaml
+# Copy initial config file
 COPY config.yaml /etc/traefik/dynamic/config.yaml
-COPY start.sh /usr/local/bin/start.sh
-COPY .env ./.env
+RUN chmod 644 /etc/traefik/dynamic/config.yaml
 
-RUN mkdir -p /etc/traefik/acme /etc/traefik/backups && \
-    chmod +x /usr/local/bin/start.sh && \
+# Copy requirements first to leverage Docker cache
+COPY requirements.txt .
+RUN pip3 install -r requirements.txt
+
+# Copy the start script first
+COPY start.sh /usr/local/bin/
+
+# Set proper permissions and fix line endings
+RUN chmod 755 /usr/local/bin/start.sh && \
     sed -i 's/\r$//' /usr/local/bin/start.sh
 
-EXPOSE 80 443 8000 8080
+# Copy the rest of the application
+COPY . .
 
-ENTRYPOINT ["sh", "/usr/local/bin/start.sh"]
+# Set the start script as the entrypoint
+ENTRYPOINT ["/usr/local/bin/start.sh"]
