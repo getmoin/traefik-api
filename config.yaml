@@ -2,7 +2,7 @@
 http:
   routers:
     traefikapi-router:
-      rule: "Host(`traefikapi.iata-poc.nborbit.ca`)"
+      rule: "Host(`traefikapi.<domain.com>`)"
       service: "traefikapi"
       entryPoints:
         - "websecure"

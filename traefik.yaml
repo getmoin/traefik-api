@@ -30,7 +30,7 @@ entryPoints:
 certificatesResolvers:
   route53:
     acme:
-      email: moin@northernblock.io
+      email: someemail@email.com
       storage: /etc/traefik/acme/acme.json
       dnsChallenge:
         provider: route53
