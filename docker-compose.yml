@@ -90,5 +90,5 @@ volumes:
     name: traefik-acme-volume
 
 networks:
-  docker_orbitNetwork:
+  docker_traefikNetwork:
     external: true
